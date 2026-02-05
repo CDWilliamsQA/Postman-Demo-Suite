@@ -74,6 +74,18 @@ newman run collections/demo_collection.json -e environments/demo_environment.jso
 
 ---
 
+## HTML Test Report Output
+- After execution, Newman Generates a detailed HTML Report
+
+reports/test-report.html
+This provides a shareable artifact summarizing:
+- Requests executed
+- Assertions validated
+- Response times
+- Failure Breakdowns
+
+Useful for CI pipelines and stakeholder reporting
+
 ## 🧩 Example Test Script
 
 ```javascript
