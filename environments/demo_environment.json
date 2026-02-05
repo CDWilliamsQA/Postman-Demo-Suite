@@ -1,0 +1,34 @@
+{
+	"id": "42a4e1a6-4288-42fb-9d99-0f32dfc63ba7",
+	"name": "Demo Environment",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "timeout_limit",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"color": 120,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-02-05T15:07:10.352Z",
+	"_postman_exported_using": "Postman/11.83.5-260205-0232"
+}

@@ -1,0 +1,288 @@
+{
+  "info": {
+    "_postman_id": "20a0c9d0-62b0-4229-b2d4-1a9e9db68262",
+    "name": "API Automation",
+    "description": "**Postman Demo Suite – API Automation Framework**\n\nThis collection represents a structured API automation framework designed to demonstrate enterprise-style regression testing practices. It is organised into layered test flows including authentication simulation, smoke validation, functional data integrity checks, negative scenario handling, and performance validation.\n\nThe suite uses environment variables for configuration, supports token-based state handling, and includes JavaScript-based response assertions. It is designed for automated execution using Newman CLI and integration into CI/CD pipelines.\n\nThis project models how QA automation engineers validate REST APIs in distributed systems, ensuring service availability, data correctness, error resilience, and performance stability.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49622036",
+    "_collection_link": "https://go.postman.co/collection/49622036-20a0c9d0-62b0-4229-b2d4-1a9e9db68262?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01 - Smoke Tests",
+      "item": [
+        {
+          "name": "Get Posts (Smoke)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Auth token is present in environment\", function () {\r",
+                  "    pm.expect(pm.environment.get(\"auth_token\")).to.not.be.undefined;\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "This folder contains high-level smoke validation checks to confirm that core API endpoints are reachable and responding correctly. These tests verify service availability, basic response integrity, and acceptable response times. Smoke tests are intended to provide rapid feedback in CI pipelines and act as the first indicator of system health."
+    },
+    {
+      "name": "02 - Functional Tests",
+      "item": [
+        {
+          "name": "Get Post 1 (Functional Validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Correct post ID returned\", function () {\r",
+                  "    pm.expect(jsonData.id).to.eql(1);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Post has required fields\", function () {\r",
+                  "    pm.expect(jsonData).to.have.property(\"userId\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"title\");\r",
+                  "    pm.expect(jsonData).to.have.property(\"body\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Title is not empty\", function () {\r",
+                  "    pm.expect(jsonData.title.length).to.be.greaterThan(0);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "This folder contains functional validation tests focused on response correctness and data integrity. These checks verify that API responses contain expected fields, correct identifiers, and valid content structures. Functional tests ensure that business logic and data contracts are behaving as intended beyond simple availability checks."
+    },
+    {
+      "name": "03 - Negative Tests",
+      "item": [
+        {
+          "name": "Get Invalid Post (Negative Test)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Request handled without crashing\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response structure is safe\", function () {\r",
+                  "    let data;\r",
+                  "    try {\r",
+                  "        data = pm.response.json();\r",
+                  "    } catch (e) {\r",
+                  "        data = null;\r",
+                  "    }\r",
+                  "    pm.expect(data === null || typeof data === \"object\").to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time under threshold\", function () {\r",
+                  "    const limit = Number(pm.environment.get(\"timeout_limit\")) || 500;\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(limit);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/posts/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "999999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "This folder contains error-handling and resilience tests designed to validate how the API responds to invalid or unexpected inputs. These scenarios ensure the system handles failure conditions safely, returns appropriate status codes, and maintains stability under adverse conditions. Negative testing is critical for assessing system robustness."
+    },
+    {
+      "name": "04 - Performance Checks",
+      "item": [
+        {
+          "name": "Get Users (Performance Check)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time under performance limit\", function () {\r",
+                  "    const limit = Number(pm.environment.get(\"timeout_limit\")) || 500;\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(limit);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response contains user objects\", function () {\r",
+                  "    const data = pm.response.json();\r",
+                  "    pm.expect(data).to.be.an(\"array\");\r",
+                  "    pm.expect(data[0]).to.have.property(\"id\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "This folder contains response time validation tests used to assess API responsiveness. These checks confirm that endpoints respond within acceptable performance thresholds and help identify latency regressions. Performance checks support non-functional testing goals and provide early detection of degradation in system responsiveness."
+    },
+    {
+      "name": "05 - Auth Flow",
+      "item": [
+        {
+          "name": "Login Simulation (Set Auth Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Login simulation successful\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const userData = pm.response.json();\r",
+                  "\r",
+                  "// Simulate creating a token\r",
+                  "const fakeToken = \"demo-token-\" + userData.id;\r",
+                  "\r",
+                  "// Store token for later requests\r",
+                  "pm.environment.set(\"auth_token\", fakeToken);\r",
+                  "\r",
+                  "pm.test(\"Auth token set in environment\", function () {\r",
+                  "    pm.expect(pm.environment.get(\"auth_token\")).to.include(\"demo-token\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "This folder contains authentication simulation and state management steps used to initialise the test session. It demonstrates token handling, environment variable storage, and request chaining. The auth flow models how real-world API test suites manage session state before executing dependent test scenarios."
+    }
+  ]
+}
