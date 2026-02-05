@@ -1,1 +1,41 @@
+name: API Automation Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  run-api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Newman + HTML Reporter
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-html
+
+      - name: Create reports folder
+        run: mkdir -p reports
+
+      - name: Run Postman Collection
+        run: |
+          newman run collections/demo_collection.json \
+            -e environments/demo_environment.json \
+            --reporters cli,html \
+            --reporter-html-export reports/test-report.html
+
+      - name: Upload HTML Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-html-report
+          path: reports/test-report.html
 
