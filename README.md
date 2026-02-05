@@ -4,6 +4,8 @@ Production-style API automation framework demonstration using Postman, environme
 
 This repository showcases how enterprise QA teams design, structure, and automate API validation within modern delivery pipelines.
 
+![API Tests](https://github.com/CDWilliamsQA/Postman-Demo-Suite/actions/workflows/api-tests.yml/badge.svg)
+
 ---
 
 ## 📌 Overview
@@ -21,7 +23,9 @@ This project reflects engineering standards used in distributed systems where AP
 - JavaScript-based test scripting and assertions  
 - Automated execution using Newman CLI  
 - CI/CD pipeline readiness  
-- Reporting and observability support  
+- HTML report artifact generation  
+- Contract validation via JSON Schema  
+- Performance regression detection  
 - Enterprise-style repository organisation  
 
 ---
@@ -33,9 +37,33 @@ This project reflects engineering standards used in distributed systems where AP
 | `/collections` | Postman collection exports containing requests and test logic |
 | `/environments` | Environment variable configurations for flexible execution |
 | `/docs` | Technical documentation and workflow references |
+| `/reports` | Generated HTML test reports (ignored in Git) |
+| `.github/workflows` | CI pipeline definitions |
 | `README.md` | Project overview and usage guide |
 | `LICENSE` | MIT open-source license |
 | `.gitignore` | Standard repository exclusions |
+
+---
+
+## 🧠 Test Strategy
+
+The suite follows a layered API regression approach:
+
+| Layer | Purpose |
+|------|---------|
+| Auth Flow | Session simulation and token handling |
+| Smoke Tests | Service availability checks |
+| Functional Tests | Data integrity and schema validation |
+| Negative Tests | Error handling and resilience checks |
+| Performance Checks | Response time threshold enforcement |
+
+### Contract Validation
+
+Functional tests include JSON Schema validation to ensure API responses conform to expected structure.
+
+### Performance Guardrails
+
+CI will fail if response times exceed defined thresholds, protecting against performance regressions.
 
 ---
 
@@ -63,28 +91,59 @@ The design supports:
 Install Newman globally:
 
 ```bash
-npm install -g newman
+npm install -g newman newman-reporter-html
 ```
 
-Execute the suite:
+Execute the suite locally:
 
 ```bash
-newman run collections/demo_collection.json -e environments/demo_environment.json
+newman run collections/demo_collection.json \
+-e environments/demo_environment.json \
+--reporters cli,html \
+--reporter-html-export reports/test-report.html
 ```
 
 ---
 
-## HTML Test Report Output
-- After execution, Newman Generates a detailed HTML Report
+## 📊 HTML Test Report Output
 
+After execution, Newman generates a detailed HTML report:
+
+```
 reports/test-report.html
-This provides a shareable artifact summarizing:
-- Requests executed
-- Assertions validated
-- Response times
-- Failure Breakdowns
+```
 
-Useful for CI pipelines and stakeholder reporting
+This provides a shareable artifact summarising:
+
+- Requests executed  
+- Assertions validated  
+- Response times  
+- Failure breakdowns  
+
+Useful for CI pipelines and stakeholder reporting.
+
+---
+
+## 🔄 CI/CD Automation
+
+API tests run automatically via **GitHub Actions** on every push and pull request.
+
+The pipeline:
+
+1. Installs Node.js  
+2. Installs Newman + HTML reporter  
+3. Executes the Postman collection  
+4. Enforces response-time thresholds  
+5. Validates API schema contracts  
+6. Uploads an HTML test report artifact  
+
+This ensures:
+
+- Continuous API reliability monitoring  
+- Early detection of breaking changes  
+- Performance regression prevention  
+
+---
 
 ## 🧩 Example Test Script
 
@@ -93,8 +152,9 @@ pm.test("Status code is 200", function () {
     pm.response.to.have.status(200);
 });
 
-pm.test("Response time under 500ms", function () {
-    pm.expect(pm.response.responseTime).to.be.below(500);
+pm.test("Response time under threshold", function () {
+    const limit = Number(pm.environment.get("timeout_limit")) || 500;
+    pm.expect(pm.response.responseTime).to.be.below(limit);
 });
 
 pm.test("Response contains required fields", function () {
@@ -103,45 +163,6 @@ pm.test("Response contains required fields", function () {
     pm.expect(jsonData).to.have.property("name");
 });
 ```
-
----
-
-## 🔄 CI/CD Integration Example
-
-This suite is designed for automated pipeline execution.
-
-Example GitHub Actions step:
-
-```yaml
-- name: Run API Tests
-  run: |
-    npm install -g newman
-    newman run collections/demo_collection.json \
-      -e environments/demo_environment.json \
-      --reporters cli,junit \
-      --reporter-junit-export results.xml
-```
-
-This enables:
-
-- Automated regression validation per build  
-- Pipeline gating based on API health  
-- Test result reporting for visibility  
-
----
-
-## 📊 Reporting
-
-Newman supports multiple reporting formats:
-
-```bash
-newman run collections/demo_collection.json \
-  -e environments/demo_environment.json \
-  --reporters cli,html \
-  --reporter-html-export report.html
-```
-
-Reports can be consumed by CI tools, dashboards, or stakeholders.
 
 ---
 
@@ -154,6 +175,8 @@ Reports can be consumed by CI tools, dashboards, or stakeholders.
 - Environment-driven execution  
 - Pipeline-compatible test framework  
 - Observability through structured reporting  
+- Contract testing via schema validation  
+- Performance threshold enforcement  
 
 ---
 
@@ -183,4 +206,4 @@ This repository demonstrates:
 ---
 
 **Maintained by:** Chris Williams  
-**Focus Areas:** QA Automation | API Testing | CI/CD Integration  
+**Focus Areas:** QA Automation | API Testing | CI/CD Integration
